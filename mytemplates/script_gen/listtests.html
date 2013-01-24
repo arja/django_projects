@@ -1,0 +1,16 @@
+<table border = "1" cellpadding="10">
+<tr>
+<td>Test Name</td>
+<td>Iterations</td>
+<td>Function body</td>
+</tr>
+{% for st in script.subtest_set.all %}
+<tr>
+    <td>{{ st.subtestname }} <a href="{% url deleteTest testid=st.id %}">(delete)</a></td>
+    <td>{{ st.iterations }}</td>
+    <td>{{ st.code }}</td>
+</tr>
+{% endfor %}
+</table>
+
+<br><a href="{% url index %}">Home</a>    <a href ="{% url generateScript %}">Generate Script</a>

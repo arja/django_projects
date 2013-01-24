@@ -8,6 +8,7 @@ class Script(models.Model):
     testname = models.CharField(max_length=100)
 
 class Subtest(models.Model):
+    parentscript = models.ForeignKey(Script)
     subtestname = models.CharField(max_length=100)
     iterations = models.CharField(max_length=100)
     code = models.CharField(max_length=10000)
