@@ -5,6 +5,8 @@ from django.core.servers.basehttp import FileWrapper
 
 from script_gen.models import Script, Subtest, SubtestForm 
 
+import plistlib
+
 def index(request):
     return render(request, 'script_gen/index.html')
 
@@ -33,14 +35,35 @@ def showTestList(request):
     return render(request, 'script_gen/listtests.html', {'script':s})
 
 def generateScript(request):
+    pl = dict(
+        SequenceName="HelloWorld Example",
+        SequenceVersion=1,
+        SchemaFormat = 1,
+        BrickRequired = "None",
+        BehaviorOnFail = "KeepGoing",
+        NumberOfTimesToRun = 1
+        )
+    
+    pl['Tests'] = []
+    
+    lua_file = open('Main.lua', 'w')
     s = get_object_or_404(Script, pk=1)
-    f = open('outputfile.txt', 'w')
     for st in Subtest.objects.all():
-        f.write(st.subtestname + ": " + "\n" + st.code + "\n\n")
+        pl['Tests'].append (
+                            dict (ActionToExecute = st.subtestname,
+                                  NumberOfTimesToRun = int(st.iterations)
+                                  )
+                            )
+        lua_file.write((st.code).replace("\r","") + "\n")
+    lua_file.flush()
+    plistlib.writePlist(pl, 'Main.plist')
+    
+    lua_file.close()
+#   f.write(st.subtestname + ": " + "\n" + st.code + "\n\n")
 
-    f.close()
-    f = open('outputfile.txt', 'r')
+#    f.close()
+    f = open('Main.plist', 'r')
 
-    response = HttpResponse(FileWrapper(f), content_type='application/txt')
-    response['Content-Disposition'] = 'attachment; filename=outputfile.txt'
+    response = HttpResponse(FileWrapper(f), content_type='application/plist')
+    response['Content-Disposition'] = 'attachment; filename=Main.plist'
     return response
