@@ -5,7 +5,7 @@ from django.core.servers.basehttp import FileWrapper
 
 from script_gen.models import Script, Subtest, SubtestForm 
 
-import plistlib
+import plistlib, zipfile
 
 def index(request):
     return render(request, 'script_gen/index.html')
@@ -59,11 +59,16 @@ def generateScript(request):
     plistlib.writePlist(pl, 'Main.plist')
     
     lua_file.close()
-#   f.write(st.subtestname + ": " + "\n" + st.code + "\n\n")
+    z = zipfile.ZipFile('SmokeyScript.zip', 'w')
+    z.write('Main.plist')
+    z.write('Main.lua')
+    z.write('PDCA.plist')
+    z.write('Smokey.log')
+    z.write('.FactoryLogsWaitingToBeCollected')
 
-#    f.close()
-    f = open('Main.plist', 'r')
+    z.close()
+    z = open('SmokeyScript.zip', 'r')
 
-    response = HttpResponse(FileWrapper(f), content_type='application/plist')
-    response['Content-Disposition'] = 'attachment; filename=Main.plist'
+    response = HttpResponse(FileWrapper(z), content_type='application/zip')
+    response['Content-Disposition'] = 'attachment; filename=SmokeyScript.zip'
     return response
